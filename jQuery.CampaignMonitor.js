@@ -11,10 +11,9 @@ jQuery.fn.campaignMonitorSignup = function(options) {
 				failure: function(){},
 				invalidEmail: function(){}
 			},
-			proxy: "" // URL to a PHP file on the same server. We use this to get around XSS
+			proxy: "" // URL to a serverside script. We need this to get around XSS.
 		},
 		options = $.extend({}, defaults, options),
-		elements = {},
 		isValidEmail = function(emailFieldValue) {
 			// Validate email address with regex
 			var pattern = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
@@ -26,7 +25,7 @@ jQuery.fn.campaignMonitorSignup = function(options) {
 
 			var url = this.action,
 				$form = $(this),
-				address = $(":text", $form).val();
+				address = $(":text", $form).get(0).val(); // This needs to be more specific
 
 			if (!isValidEmail(address)) {
 				options.callbacks.invalidEmail();
@@ -39,11 +38,14 @@ jQuery.fn.campaignMonitorSignup = function(options) {
 					url: url + "?" + $form.serialize()
 				},
 				function(data) {
+					/*
 					if (data.search(/invalid/i) === -1) {
 						options.callbacks.success();
 					} else {
 						options.callbacks.failure();
 					}
+					*/
+					options.callbacks[data.search(/invalid/i) === -1 ? "success" : "failure"](); // untested
 				},
 				"html"
 			);
